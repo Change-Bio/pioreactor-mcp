@@ -1,0 +1,48 @@
+name: CI
+
+on: [pull_request, push, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: ["ubuntu-latest"]
+        python-version: ["3.9"]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          pip install -e .
+          pip install git+https://github.com/pioreactor/pioreactor.git#egg=pioreactor[worker]
+          pip install pytest fake-rpi
+          pip install crudini
+      - name: Mosquitto MQTT Broker in GitHub Actions
+        uses: Namoshek/mosquitto-github-action@v1
+        with:
+          version: '1.6'
+
+      - name: Create dot_pioreactor folder
+        run: |
+           mkdir -p .pioreactor/storage
+
+      - name: Get config
+        run: wget https://raw.githubusercontent.com/Pioreactor/pioreactor/master/config.dev.ini
+
+      - name: Edit config
+        run: crudini --merge config.dev.ini < pioreactor_relay_plugin/additional_config.ini
+
+      - name: Run tests
+        run: pytest pioreactor_relay_plugin/test_relay.py
+        env:
+          TESTING: 1
+          TMPDIR: /tmp/

@@ -1,0 +1,18 @@
+# There are lots of examples of job yaml files at https://github.com/Pioreactor/pioreactorui/tree/master/contrib/jobs
+---
+display_name:  # human readable name
+job_name: # `job_name` as defined in your Python file
+display: # bool; true to display on the /Pioreactors card
+source: # name of your plugin
+description: # description of what your plugin does
+published_settings:
+  - key:  # as defined in Python
+    unit: # unit (ml, lux, AU, etc.)
+    label: # human readable name
+    description: # description of your setting
+    type:  # one of numeric, boolean, string, json
+    default: # provide a default value, often null
+    display: # bool; true to display on the /Pioreactors card
+  - key: ...
+    unit: ...
+  ...

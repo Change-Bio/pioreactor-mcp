@@ -1,0 +1,14 @@
+# Edit and copy this into the appropriate folder
+# There are lots of examples of automation yaml files at https://github.com/Pioreactor/pioreactorui/tree/master/contrib/automations
+---
+display_name:  # human readable name
+automation_name: # automation name as defined in your Python files
+source: # name of your plugin
+description: # description of your plugin
+fields:
+  - key:  # as defined in Python
+    unit: # unit of your key
+    label: # human readable name
+    description: # description of your key
+  - key: ...
+    unit: ...

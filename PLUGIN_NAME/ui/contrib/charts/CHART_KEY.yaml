@@ -1,0 +1,15 @@
+---
+chart_key: # a unique identifier for the chart being added, string.
+data_source: # the SQL table to read historical data from. The data source must have a timestamp, pioreactor_unit, and experiment column, along with a numeric column to plot (see below), string.
+data_source_column: # the column in data_source to read and display, string.
+title: # title on the chart, string
+mqtt_topic: # a truncated MQTT topic to read live data from - stripped of the pioreactor/<unit>/<experiment> part. Ex: co2_readings/ppm if the entire MQTT topic is pioreactor/<unit>/<experiment>/co2_readings/ppm, string.
+source: app
+payload_key: # (Optional) If the MQTT topic is json blobs, use the payload_key to retrieve the data from the blob, string.
+y_axis_label: # the y-axis label, string
+interpolation: # (Optional) the interpolation to use between points, default is stepAfter, string.
+y_axis_domain: # (Optional) specify a starting y-axis domain. Must be an array, like [0.0, 0.5].
+y_transformation: # (Optional) an inline JS function to transform the y data. Default is the identity function, string.
+lookback: # Not described in docs
+fixed_decimals: # How many decimals to display, integer.
+down_sample: # (Optional) A boolean to down-sample the data points from the server or not.
