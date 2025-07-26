@@ -1,15 +1,14 @@
-## Pioreactor plugin template
+## Pioreactor MCP server 
 
-[Instructions for making plugin packages [here](https://docs.pioreactor.com/developer-guide/plugin-as-python-package).]
-
-Explain what the plugin does here
+This pioreactor plugin will start an MCP server running on the pioreactor that can act as a bridge between an MCP client running an LLM and the REST API that can control the pioreactor.
+Be careful! Who knows what the LLM might do...
 
 ## Installation
 
 Install from the Pioreactor plugins web interface or the command line:
 
 ```
-pio install-plugin [NAME OF PLUGIN HERE - remember to use hyphens (-) to separate words]    # to install directly on the Pioreactor
+pio install-plugin mcp-server # to install directly on the Pioreactor
 
 # OR, on the leader's command line:
 
