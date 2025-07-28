@@ -6,6 +6,7 @@ from mcp.server.fastmcp import FastMCP
 from pioreactor.background_jobs.base import BackgroundJob
 from pioreactor.config import config
 from pioreactor.logging import create_logger
+from pioreactor.whoami import am_I_leader, get_unit_name
 from typing import Optional, Dict, Any, List
 
 
@@ -220,9 +221,18 @@ class MCPServer(BackgroundJob):
 def click_pioreactor_mcp(port):
     """
     Start the Pioreactor MCP server.
+    Only runs on the leader unit - exits silently on workers.
     """
+    # Only run MCP server on the leader unit
+    if not am_I_leader():
+        print("MCP server only runs on leader unit. Exiting.")
+        return
+    
+    # Get the actual unit name instead of using fallback
+    unit_name = get_unit_name()
+    
     job = MCPServer(
-        unit=config.get("experiment", "unit", fallback="pioreactor"),
+        unit=unit_name,
         experiment=config.get("experiment", "experiment", fallback="_testing_experiment"),
         port=port
     )
