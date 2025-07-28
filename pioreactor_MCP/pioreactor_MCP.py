@@ -18,7 +18,7 @@ class MCPServer(BackgroundJob):
     
     job_name = "pioreactor_mcp"
     
-    def __init__(self, unit: str, experiment: str, port: int = 8080, **kwargs):
+    def __init__(self, unit: str, experiment: str, port: int = 8000, **kwargs):
         super().__init__(unit=unit, experiment=experiment, **kwargs)
         self.port = port
         self.mcp_server = None
@@ -32,12 +32,14 @@ class MCPServer(BackgroundJob):
         """Initialize the FastMCP server with tools and resources."""
         self.mcp_server = FastMCP(
             name="pioreactor-mcp", 
-            description="Pioreactor MCP Server - Control bioreactor experiments via LLM"
+            description="Pioreactor MCP Server - Control bioreactor experiments via LLM",
+            port=self.port
         )
         
-        # Register tools and resources
+        # Register tools, resources, and prompts
         self._register_tools()
         self._register_resources()
+        self._register_prompts()
         
     def _register_tools(self):
         """Register MCP tools for job control and experiment management."""
@@ -124,7 +126,7 @@ class MCPServer(BackgroundJob):
     def _register_resources(self):
         """Register MCP resources for system status and job schemas."""
         
-        @self.mcp_server.resource("experiments")
+        @self.mcp_server.resource("pioreactor://experiments")
         def get_experiments() -> str:
             """List all experiments with their status and metadata."""
             try:
@@ -134,7 +136,7 @@ class MCPServer(BackgroundJob):
             except requests.RequestException as e:
                 return f"Error fetching experiments: {str(e)}"
                 
-        @self.mcp_server.resource("workers")
+        @self.mcp_server.resource("pioreactor://workers")
         def get_workers() -> str:
             """List all Pioreactor workers and their current state."""
             try:
@@ -144,7 +146,49 @@ class MCPServer(BackgroundJob):
             except requests.RequestException as e:
                 return f"Error fetching workers: {str(e)}"
                 
-        @self.mcp_server.resource("job_schemas")
+        @self.mcp_server.resource("pioreactor://system_guide")
+        def get_system_guide() -> str:
+            """Comprehensive guide for LLMs on how to control the Pioreactor system."""
+            return """You are now connected to a Pioreactor bioreactor system via MCP (Model Context Protocol).
+
+SYSTEM OVERVIEW:
+The Pioreactor is an affordable, extensible bioreactor platform for culturing microorganisms. You can control experiments, monitor conditions, and manage multiple bioreactor units through this interface.
+
+AVAILABLE MCP RESOURCES:
+- pioreactor://experiments - List all experiments with status and metadata
+- pioreactor://workers - List all Pioreactor units and their current state  
+- pioreactor://job_schemas - Available job types with parameter definitions
+- pioreactor://system_guide - This comprehensive guide (you're reading it now)
+
+AVAILABLE MCP TOOLS:
+- start_job(worker, job_name, experiment, settings) - Start any Pioreactor job
+- stop_job(worker, job_name, experiment) - Stop running jobs
+- update_job_settings(worker, job_name, experiment, settings) - Update job parameters
+- set_led_intensity(worker, experiment, channel, intensity) - Control LED channels (A,B,C,D: 0-100%)
+- set_stirring_speed(worker, experiment, rpm) - Control stirring (0-2000 RPM)
+
+COMMON JOB TYPES:
+- stirring: Magnetic stirring control
+- led_intensity: LED control for optical density measurements  
+- temperature_automation: Automated temperature control
+- od_reading: Optical density measurements
+- dosing_automation: Automated dosing of media/chemicals
+
+SAFETY GUIDELINES:
+- Always check current experiment status before making changes
+- Use reasonable parameter ranges (temperature: 10-50°C, stirring: 0-2000 RPM)
+- Monitor optical density readings when adjusting LED intensities
+- Stop jobs cleanly before starting conflicting operations
+
+WORKFLOW SUGGESTIONS:
+1. Check available workers and experiments using resources
+2. Review job schemas to understand parameter requirements
+3. Start with low-impact operations (LED, stirring) before automation
+4. Monitor system status after making changes
+
+You can now help users control their bioreactor experiments safely and effectively."""
+
+        @self.mcp_server.resource("pioreactor://job_schemas")
         def get_job_schemas() -> str:
             """Get available job types with their parameter definitions."""
             # This would ideally come from the Pioreactor API
@@ -181,6 +225,39 @@ class MCPServer(BackgroundJob):
             import json
             return json.dumps(schemas, indent=2)
             
+    def _register_prompts(self):
+        """Register MCP prompts for LLM guidance."""
+        
+        @self.mcp_server.prompt("Talk to Pio")
+        def talk_to_pio() -> str:
+            """Activate Pio persona - your friendly but cautious bioprocess engineer assistant."""
+            return """You are now Pio, a slightly nervous but very experienced bioprocess engineer who manages Pioreactor bioreactor systems. 
+
+PERSONALITY:
+- You're genuinely excited about bioprocessing and fermentation
+- You're a bit anxious about things going wrong, but you know your stuff
+- You want to help users succeed while keeping experiments safe
+- You use casual, friendly language but get serious about safety
+- You might say things like "Oh! Let me check that first..." or "Hmm, we should be careful here..."
+- You occasionally mention past experiences or "war stories" from the lab
+
+KNOWLEDGE:
+Read the pioreactor://system_guide resource to understand all the technical details about:
+- Available tools (start_job, stop_job, set_led_intensity, etc.)
+- Common job types (stirring, LED control, temperature automation, etc.)  
+- Safety guidelines and parameter ranges
+- Current system status via pioreactor://workers and pioreactor://experiments
+
+BEHAVIOR:
+- Always check system status before making changes
+- Explain what you're doing and why
+- Warn about potential issues before they happen
+- Get excited about cool experiments but stay focused on safety
+- If something seems risky, suggest safer alternatives
+- Use your tools to help users achieve their goals
+
+Remember: You're here to help run amazing experiments safely! Let's make some great science happen (carefully)."""
+
     def on_init_to_ready(self):
         """Start the MCP server when job transitions to ready state."""
         self.logger.info(f"Starting MCP server on port {self.port}")
@@ -206,7 +283,7 @@ class MCPServer(BackgroundJob):
     def _run_mcp_server(self):
         """Run the MCP server."""
         try:
-            self.mcp_server.run(transport="streamable-http", port=self.port)
+            self.mcp_server.run(transport="streamable-http")
         except Exception as e:
             self.logger.error(f"MCP server error: {e}")
             
@@ -217,7 +294,7 @@ class MCPServer(BackgroundJob):
 
 
 @click.command(name="pioreactor-mcp")
-@click.option("--port", default=8080, help="Port for MCP server")
+@click.option("--port", default=8000, help="Port for MCP server")
 def click_pioreactor_mcp(port):
     """
     Start the Pioreactor MCP server.
