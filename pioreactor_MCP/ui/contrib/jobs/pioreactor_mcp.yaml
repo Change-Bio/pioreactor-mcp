@@ -1,0 +1,35 @@
+---
+display_name: MCP Server
+job_name: pioreactor_mcp
+display: true
+source: pioreactor_MCP
+description: Model Context Protocol server for LLM interaction with Pioreactor hardware
+published_settings:
+  - key: port
+    unit: 
+    label: Server Port
+    description: Port number for the MCP server
+    type: numeric
+    default: 8080
+    display: true
+  - key: logging_level
+    unit: 
+    label: Logging Level
+    description: Log verbosity level
+    type: string
+    default: INFO
+    display: true
+  - key: active_connections
+    unit: 
+    label: Active Connections
+    description: Number of active MCP client connections
+    type: numeric
+    default: 0
+    display: true
+  - key: server_status
+    unit: 
+    label: Server Status
+    description: Current status of the MCP server
+    type: string
+    default: "stopped"
+    display: true

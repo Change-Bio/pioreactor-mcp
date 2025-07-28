@@ -1,6 +1,6 @@
-# recursive-include <PLUGIN_NAME>/ui/ *.yaml
-# include <PLUGIN_NAME>/additional_config.ini
-# include <PLUGIN_NAME>/additional_sql.sql
-# include <PLUGIN_NAME>/post_install.sh
-# include <PLUGIN_NAME>/pre_uninstall.sh
-# include <PLUGIN_NAME>/LEADER_ONLY
+recursive-include pioreactor_MCP/ui/ *.yaml
+include pioreactor_MCP/additional_config.ini
+include pioreactor_MCP/post_install.sh
+include LICENSE.txt
+include README.md
+include CLAUDE.md
