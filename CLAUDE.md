@@ -219,3 +219,17 @@ update_job_settings("pioreactor01", "temperature_automation", "my_experiment", {
 - Not handling HTTP status codes properly
 
 **When in doubt, refer to the official docs first, not assumptions or examples from other projects.**
+
+## Development Workflow
+
+**Git Commit Guidelines:**
+- After completing significant features or bug fixes, suggest creating git commits
+- Use clear, descriptive commit messages following conventional commit format
+- Break large changes into logical, focused commits
+- Always test functionality before committing
+- Suggest committing when:
+  - A feature is complete and working
+  - A bug has been fixed and verified
+  - Documentation has been updated
+  - Major refactoring is finished
+  - Before switching to work on different functionality
