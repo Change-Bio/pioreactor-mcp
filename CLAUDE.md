@@ -104,19 +104,27 @@ pip install dist/pioreactor_MCP-*.whl
 - **Methods**: PATCH for updates, GET for status, POST for creation
 
 ### Key API Endpoints
+**IMPORTANT: Always check https://docs.pioreactor.com/developer-guide/web-ui-api for correct endpoints**
+
 ```
-# Job Control
-PATCH /api/workers/{worker}/jobs/run/{job_name}/experiments/{experiment}
-PATCH /api/workers/{worker}/jobs/stop/{job_name}/experiments/{experiment}
-PATCH /api/workers/{worker}/jobs/pause/{job_name}/experiments/{experiment}
+# Job Control (note: uses /units/ not /workers/)
+PATCH /api/units/{unit}/jobs/run/job_name/{job}/experiments/{experiment}
+PATCH /api/units/{unit}/jobs/stop/job_name/{job}/experiments/{experiment}
+PATCH /api/units/{unit}/jobs/update/job_name/{job}/experiments/{experiment}
 
-# Settings Updates  
-PATCH /api/workers/{worker}/jobs/update/{job_name}/experiments/{experiment}
+# Running Jobs Status
+GET /api/units/{unit}/jobs/running
+GET /api/units/{unit}/jobs/running/experiments/{experiment}
 
-# Examples from docs:
-# Start stirring: jobs/run/stirring/experiments/{experiment}
-# Update LED: jobs/update/led_intensity/experiments/{experiment}  
-# Temperature automation: jobs/run/temperature_automation/experiments/{experiment}
+# Worker Management
+GET /api/workers - List all workers
+POST /api/workers - Add worker  
+DELETE /api/workers/{unit} - Remove worker
+
+# Examples:
+# Start stirring: /api/units/pioreactor01/jobs/run/job_name/stirring/experiments/my_exp
+# Update LED: /api/units/pioreactor01/jobs/update/job_name/led_intensity/experiments/my_exp
+# Check running jobs: /api/units/pioreactor01/jobs/running
 ```
 
 ### Configuration System
@@ -194,3 +202,20 @@ update_job_settings("pioreactor01", "temperature_automation", "my_experiment", {
 - Configuration changes affect entire Pioreactor cluster when installed via pios
 - Web UI integration provides manual oversight and control capabilities
 - All tool calls are synchronous and return success/error status with messages
+
+## API Development Guidelines
+
+**CRITICAL: Before implementing any API-related tools or making API calls, ALWAYS:**
+
+1. **Check the official API documentation**: https://docs.pioreactor.com/developer-guide/web-ui-api
+2. **Verify endpoint patterns**: Use `/api/units/` for job control, not `/api/workers/`
+3. **Test API calls manually** using curl or the browser before implementing in code
+4. **Follow the exact URL structure** shown in the docs (e.g., `/job_name/{job}` not `/{job}`)
+
+**Common API Mistakes to Avoid:**
+- Using `/api/workers/` instead of `/api/units/` for job control
+- Missing `/job_name/` segment in job control URLs
+- Assuming endpoint patterns without checking documentation
+- Not handling HTTP status codes properly
+
+**When in doubt, refer to the official docs first, not assumptions or examples from other projects.**
